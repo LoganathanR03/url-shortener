@@ -1,14 +1,124 @@
-<!-- templates/index.html -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>URL Shortener</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f0f0, #d9e6f2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: #fff;
+            padding: 30px 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            text-align: center;
+            width: 100%;
+            max-width: 450px;
+            animation: fadeIn 1s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #3498db;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #2c3e50;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .result a {
+            color: #e74c3c;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .result a:hover {
+            text-decoration: underline;
+        }
+    </style>
+    <script>
+        async function shortenURL(event) {
+            event.preventDefault();
+            const input = document.querySelector('input[name="long_url"]');
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Generating...';
+
+            const formData = new FormData();
+            formData.append('long_url', input.value);
+
+            const response = await fetch('/shorten', {
+                method: 'POST',
+                body: formData
+            });
+
+            const text = await response.text();
+            resultDiv.innerHTML = text;
+        }
+    </script>
 </head>
 <body>
-    <h1>Shorten Your URL</h1>
-    <form method="POST" action="/shorten">
-        <input type="text" name="long_url" placeholder="Enter your long URL" required>
-        <button type="submit">Shorten</button>
-    </form>
+    <div class="container">
+        <div class="logo">🔗 TinyURL</div>
+        <h1>Shorten Your URL</h1>
+        <form onsubmit="shortenURL(event)">
+            <input type="text" name="long_url" placeholder="Enter your long URL" required>
+            <button type="submit">Shorten</button>
+        </form>
+        <div id="result" class="result"></div>
+    </div>
 </body>
 </html>
