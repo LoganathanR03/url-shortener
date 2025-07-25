@@ -1,5 +1,4 @@
 from flask import Flask, request, redirect, render_template
-from db import get_db_connection
 import pymysql
 import hashlib
 import base64
@@ -39,8 +38,8 @@ def shorten_url():
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Check if URL already exists in database
-    cursor.execute("SELECT short_url FROM url_mapping WHERE long_url = %s", (long_url,))
+    # 🔄 Check if URL already exists in database
+    cursor.execute("SELECT short_url FROM urls WHERE long_url = %s", (long_url,))
     existing_entry = cursor.fetchone()
 
     if existing_entry:
@@ -48,11 +47,11 @@ def shorten_url():
         short = existing_entry['short_url']
         return f"Shortened URL: <a href='/{short}'>{request.host_url}{short}</a>"
 
-    # Generate a new short URL and insert into DB
+    # 🔄 Generate a new short URL and insert into DB
     short_url = generate_short_url(long_url)
     cursor.execute(
-        "INSERT INTO url_mapping (long_url, short_url, clicks) VALUES (%s, %s, %s)",
-        (long_url, short_url, 0)
+        "INSERT INTO urls (long_url, short_url) VALUES (%s, %s)",
+        (long_url, short_url)
     )
     conn.commit()
     conn.close()
@@ -65,13 +64,10 @@ def redirect_url(short_url):
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT long_url FROM url_mapping WHERE short_url = %s", (short_url,))
+    cursor.execute("SELECT long_url FROM urls WHERE short_url = %s", (short_url,))
     entry = cursor.fetchone()
 
     if entry:
-        # Update click count
-        cursor.execute("UPDATE url_mapping SET clicks = clicks + 1 WHERE short_url = %s", (short_url,))
-        conn.commit()
         conn.close()
         return redirect(entry['long_url'])
 
