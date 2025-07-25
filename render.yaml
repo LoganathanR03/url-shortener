@@ -1,0 +1,8 @@
+# render.yaml
+services:
+  - type: web
+    name: url-shortener
+    env: python
+    buildCommand: ""
+    startCommand: waitress-serve --port=$PORT app:app
+    autoDeploy: true
