@@ -32,10 +32,3 @@ Users can input a long URL and get a short version, which redirects to the origi
 
 ---
 
-## 🧪 Installation (Local Setup)
-
-### 1️⃣ Clone this repository
-```bash
-git clone https://github.com/LoganathanR03/url-shortener.git
-cd url-shortener
-
