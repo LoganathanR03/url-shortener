@@ -9,7 +9,7 @@ app = Flask(__name__)
 # Get DATABASE_URL from environment variables (Render) or use fallback
 DATABASE_URL = os.environ.get("DATABASE_URL") or "postgresql://tc_user:G73AhzPO8ZfroiXUejJgH1iXMciRfPQn@dpg-d22553be5dus7399csp0-a.singapore-postgres.render.com/tc_db_qu7e"
 
-# Initialize DB table if not exists
+# Initialize DB
 def init_db():
     with psycopg.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
@@ -24,21 +24,16 @@ def init_db():
             ''')
             conn.commit()
 
-# Auto-run DB init before first request (for Render)
-@app.before_first_request
-def initialize():
-    init_db()
-
-# Generate random short code
+# Generate short code
 def generate_short_code(length=6):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
 
-# Homepage
+# Home page
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# Handle form submit
+# Handle form submission
 @app.route('/shorten', methods=['POST'])
 def shorten_url():
     long_url = request.form['long_url'].strip()
@@ -55,10 +50,10 @@ def shorten_url():
                 cur.execute("INSERT INTO url_mapping (long_url, short_code) VALUES (%s, %s)", (long_url, short_code))
                 conn.commit()
 
-    full_short_url = f"https://url-shortener-pum6.onrender.com/{short_code}"  # Render domain
+    full_short_url = f"https://chan/{short_code}"  # Custom domain/tag
     return f"Short URL: <a href='/{short_code}' target='_blank'>{full_short_url}</a>"
 
-# Redirect handler
+# Redirect short URL
 @app.route('/<short_code>')
 def redirect_url(short_code):
     with psycopg.connect(DATABASE_URL) as conn:
@@ -74,7 +69,6 @@ def redirect_url(short_code):
             else:
                 return "Invalid or expired short URL.", 404
 
-# For local dev only
 if __name__ == '__main__':
-    init_db()
+    init_db()  # <-- Moved this here
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
