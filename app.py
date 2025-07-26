@@ -7,24 +7,23 @@ from urllib.parse import urlparse
 
 app = Flask(__name__)
 
-# Get DATABASE_URL from Render environment variables (set later)
+# Get DATABASE_URL from environment variables (Render) or use fallback
 DATABASE_URL = os.environ.get("DATABASE_URL") or "postgresql://tc_user:G73AhzPO8ZfroiXUejJgH1iXMciRfPQn@dpg-d22553be5dus7399csp0-a.singapore-postgres.render.com/tc_db_qu7e"
 
 # Initialize DB
 def init_db():
-    conn = psycopg2.connect(DATABASE_URL)
-    cur = conn.cursor()
-    cur.execute('''
-        CREATE TABLE IF NOT EXISTS url_mapping (
-            id SERIAL PRIMARY KEY,
-            long_url TEXT NOT NULL UNIQUE,
-            short_code TEXT NOT NULL UNIQUE,
-            clicks INTEGER DEFAULT 0,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-    ''')
-    conn.commit()
-    conn.close()
+    with psycopg.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cur:
+            cur.execute('''
+                CREATE TABLE IF NOT EXISTS url_mapping (
+                    id SERIAL PRIMARY KEY,
+                    long_url TEXT NOT NULL UNIQUE,
+                    short_code TEXT NOT NULL UNIQUE,
+                    clicks INTEGER DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            ''')
+            conn.commit()
 
 # Generate short code
 def generate_short_code(length=6):
@@ -39,39 +38,37 @@ def index():
 @app.route('/shorten', methods=['POST'])
 def shorten_url():
     long_url = request.form['long_url'].strip()
-    conn = psycopg2.connect(DATABASE_URL)
-    cur = conn.cursor()
 
-    # Check if already exists
-    cur.execute("SELECT short_code FROM url_mapping WHERE long_url = %s", (long_url,))
-    result = cur.fetchone()
-    if result:
-        short_code = result[0]
-    else:
-        short_code = generate_short_code()
-        cur.execute("INSERT INTO url_mapping (long_url, short_code) VALUES (%s, %s)", (long_url, short_code))
-        conn.commit()
+    with psycopg.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT short_code FROM url_mapping WHERE long_url = %s", (long_url,))
+            result = cur.fetchone()
 
-    conn.close()
+            if result:
+                short_code = result[0]
+            else:
+                short_code = generate_short_code()
+                cur.execute("INSERT INTO url_mapping (long_url, short_code) VALUES (%s, %s)", (long_url, short_code))
+                conn.commit()
+
     full_short_url = f"https://chan/{short_code}"  # Custom domain/tag
     return f"Short URL: <a href='/{short_code}' target='_blank'>{full_short_url}</a>"
 
 # Redirect short URL
 @app.route('/<short_code>')
 def redirect_url(short_code):
-    conn = psycopg2.connect(DATABASE_URL)
-    cur = conn.cursor()
-    cur.execute("SELECT long_url FROM url_mapping WHERE short_code = %s", (short_code,))
-    result = cur.fetchone()
-    if result:
-        long_url = result[0]
-        cur.execute("UPDATE url_mapping SET clicks = clicks + 1 WHERE short_code = %s", (short_code,))
-        conn.commit()
-        conn.close()
-        return redirect(long_url)
-    else:
-        conn.close()
-        return "Invalid or expired short URL.", 404
+    with psycopg.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT long_url FROM url_mapping WHERE short_code = %s", (short_code,))
+            result = cur.fetchone()
+
+            if result:
+                long_url = result[0]
+                cur.execute("UPDATE url_mapping SET clicks = clicks + 1 WHERE short_code = %s", (short_code,))
+                conn.commit()
+                return redirect(long_url)
+            else:
+                return "Invalid or expired short URL.", 404
 
 if __name__ == '__main__':
     init_db()
