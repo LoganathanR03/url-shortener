@@ -33,6 +33,11 @@ def generate_short_code(length=6):
 def index():
     return render_template('index.html')
 
+@app.route('/favicon.ico')
+def favicon():
+    return '', 204  # No Content response (prevents error in logs)
+
+
 # Handle form submission
 @app.route('/shorten', methods=['POST'])
 def shorten_url():
