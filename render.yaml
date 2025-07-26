@@ -1,14 +1,14 @@
 services:
   - type: web
-    name: url-shortener
+    name: url-shortener-app
     env: python
-    buildCommand: ""
+    buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
     envVars:
       - key: DATABASE_URL
         fromDatabase:
-          name: url-db
+          name: url-shortener-db
           property: connectionString
 
 databases:
-  - name: url-db
+  - name: url-shortener-db
