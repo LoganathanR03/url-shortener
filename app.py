@@ -1,5 +1,5 @@
 from flask import Flask, request, redirect, render_template
-import psycopg2
+import psycopg
 import string
 import random
 import os
