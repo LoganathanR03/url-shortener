@@ -26,13 +26,13 @@ Users can input a long URL and get a short version, which redirects to the origi
 
 ## 📸 Screenshot
 
-> (You can upload a screenshot image and link it here. Example:)
 
 ![Home page Screenshot](home.png)
 
 ![Home page Testing Screenshot](testing.png)
 
 ---
+
 
 
 
