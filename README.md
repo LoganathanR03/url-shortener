@@ -30,9 +30,10 @@ Users can input a long URL and get a short version, which redirects to the origi
 
 ![Home page Screenshot](home.png)
 
-![App Woring Video](url shortner testing.mp4)
+![Home page Testing Screenshot](testing.png)
 
 ---
+
 
 
 
