@@ -28,10 +28,11 @@ Users can input a long URL and get a short version, which redirects to the origi
 
 > (You can upload a screenshot image and link it here. Example:)
 
-![App Screenshot](screenshot.png)
+![Home page Screenshot](home.png)
 
 ![App Woring Video](url shortner testing.mp4)
 
 ---
+
 
 
